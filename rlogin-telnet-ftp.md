@@ -411,17 +411,19 @@ Modifique la expresión de filtrado para capturar el tráfico SSH (puerto `22`) 
 ### Ejercicio 10
 Vamos a aprovechar la seguridad que nos proporciona SSH y la multiplexación de canales lógicos para realizar una sesión de TELNET segura con la máquina utilizada en los apartados anteriores. En concreto, vamos a utilizar el reenvío de puertos local. Para ello, tiene que crear una conexión SSH como hicimos en el apartado anterior esta vez añadiendo el parámetro `-L` e iniciar una sesión de telnet a `localhost` y al puerto que haya especificado en la conexión SSH. Compruebe que todo tráfico intercambiado en la sesión de telnet viaja por la conexión SSH y que el contenido va cifrado y, por tanto, no puede verlo.
 ```
-ssh -L 8000:vit002:23 localhost
+ssh -L 2323:localhost:23 vit002
 ```
 ```
 user@vit001:~ $ telnet
-telnet> open localhost 8000
+telnet> open localhost 2323
 Trying 127.0.0.1...
 Connected to localhost.
 Escape character is '^]'.
 Debian GNU/Linux 12
 vit002 login:
 ```
+
+> Podemos comprobar con `tcpdump -i eth0 tcp port 23` que no pasa ningún paquete.
 
 
 
@@ -675,16 +677,19 @@ Pruebe ahora a hacer el `LIST`, `RETR` y `STOR` con la ayuda del comando `PASV` 
 ```
 PASV
 227 Entering Passive Mode (163,117,171,192,40,237).
-HELP
-214-The following commands are recognized.
- ABOR ACCT ALLO APPE CDUP CWD  DELE EPRT EPSV FEAT HELP LIST MDTM MKD
- MODE NLST NOOP OPTS PASS PASV PORT PWD  QUIT REIN REST RETR RMD  RNFR
- RNTO SITE SIZE SMNT STAT STOR STOU STRU SYST TYPE USER XCUP XCWD XMKD
- XPWD XRMD
-214 Help OK.
-list
-425 Failed to establish connection.
 ```
 
-> Sí, pero falla al establecer la conexión
+> Ahora es necesario abrir otra conexión con telnet al puerto que nos especifican, que es $40*256+237=10477$
 
+```
+telnet> open vit002 10477
+Trying 163.117.171.192...
+Connected to vit002.
+Escape character is '^]'.
+```
+
+> Al hacer `LIST` en la conexión principal, nos llega la respuesta en la segunda
+```
+drwxr-xr-x   61 ftp      ftp          4096 Nov 19 04:19 pub
+Connection closed by foreign host.
+```
